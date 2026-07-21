@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>Backpacks</name>
-    <description>Backpack plugin for Paper 1.26.2</description>
+    <description>Backpack plugin for Paper 26.2</description>
 
     <properties>
         <java.version>25</java.version>

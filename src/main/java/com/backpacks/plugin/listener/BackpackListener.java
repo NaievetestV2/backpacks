@@ -49,12 +49,21 @@ public class BackpackListener implements Listener {
                 handleAddonItem(player, item);
             }
         } else if (event.getAction().toString().contains("LEFT")) {
-            PlayerInventory inv = player.getInventory();
-            ItemStack chest = inv.getChestplate();
-            if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
-                event.setCancelled(true);
-                if (player.isSneaking()) {
-                    openChestplateSelection(player, chest);
+            if (isBackpack(item)) {
+                PlayerInventory inv = player.getInventory();
+                ItemStack chest = inv.getChestplate();
+                if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE) {
+                    event.setCancelled(true);
+                    com.backpacks.plugin.backpack.ChestplateCombiner.attach(player, item);
+                }
+            } else {
+                PlayerInventory inv = player.getInventory();
+                ItemStack chest = inv.getChestplate();
+                if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
+                    event.setCancelled(true);
+                    if (player.isSneaking()) {
+                        openChestplateSelection(player, chest);
+                    }
                 }
             }
         }

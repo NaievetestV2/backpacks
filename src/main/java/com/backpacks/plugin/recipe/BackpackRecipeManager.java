@@ -1,6 +1,7 @@
 package com.backpacks.plugin.recipe;
 
 import com.backpacks.plugin.BackpacksPlugin;
+import com.backpacks.plugin.addon.AddonItemFactory;
 import com.backpacks.plugin.backpack.BackpackData;
 import com.backpacks.plugin.backpack.BackpackTier;
 import org.bukkit.Material;
@@ -40,7 +41,7 @@ public class BackpackRecipeManager {
 
     private void registerAddon(String name, Material base) {
         NamespacedKey key = BackpacksPlugin.key("addon_" + name);
-        SmithingTransformRecipe recipe = new SmithingTransformRecipe(key, new ItemStack(Material.PAPER), new RecipeChoice.ExactChoice(new ItemStack(base)), new RecipeChoice.MaterialChoice(Material.DIAMOND), null);
+        SmithingTransformRecipe recipe = new SmithingTransformRecipe(key, AddonItemFactory.create(name), new RecipeChoice.ExactChoice(new ItemStack(base)), new RecipeChoice.MaterialChoice(Material.DIAMOND), null);
         plugin.getServer().addRecipe(recipe);
     }
 }
