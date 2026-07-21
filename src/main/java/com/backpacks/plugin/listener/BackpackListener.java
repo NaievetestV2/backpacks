@@ -7,12 +7,15 @@ import com.backpacks.plugin.gui.AddonGUI;
 import com.backpacks.plugin.gui.BackpackGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -41,6 +44,9 @@ public class BackpackListener implements Listener {
             if (isBackpack(item)) {
                 event.setCancelled(true);
                 openBackpack(player, item);
+            } else if (isAddonItem(item)) {
+                event.setCancelled(true);
+                handleAddonItem(player, item);
             }
         } else if (event.getAction().toString().contains("LEFT")) {
             PlayerInventory inv = player.getInventory();
@@ -63,6 +69,46 @@ public class BackpackListener implements Listener {
         ItemStack chest = inv.getChestplate();
         if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
             openChestplateSelection(player, chest);
+        }
+    }
+
+    @EventHandler
+    public void onToggleGlide(EntityToggleGlideEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        ItemStack chest = player.getInventory().getChestplate();
+        if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) return;
+        ItemMeta meta = chest.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        boolean glider = container.get(BackpacksPlugin.key("glider"), PersistentDataType.BYTE) != null && container.get(BackpacksPlugin.key("glider"), PersistentDataType.BYTE) == 1;
+        if (!glider) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBowShoot(org.bukkit.event.entity.EntityShootBowEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        ItemStack chest = player.getInventory().getChestplate();
+        if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) return;
+        ItemMeta meta = chest.getItemMeta();
+        if (meta == null) return;
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        String raw = container.get(BackpacksPlugin.key("attached_backpacks"), PersistentDataType.STRING);
+        if (raw == null || raw.isEmpty()) return;
+        for (String part : raw.split(",")) {
+            if (part.isBlank()) continue;
+            String[] split = part.split(":");
+            if (split.length != 2) continue;
+            UUID id = UUID.fromString(split[1]);
+            BackpackData data = manager.getBackpack(id);
+            if (data == null || !data.hasAddon("quiver")) continue;
+            for (ItemStack quiverItem : data.items()) {
+                if (quiverItem != null && quiverItem.getType() == Material.ARROW) {
+                    player.getInventory().addItem(quiverItem);
+                    quiverItem.setAmount(0);
+                }
+            }
         }
     }
 
@@ -91,6 +137,22 @@ public class BackpackListener implements Listener {
         if (meta == null) return false;
         PersistentDataContainer container = meta.getPersistentDataContainer();
         return container.has(BackpacksPlugin.key("backpack_id"), PersistentDataType.STRING);
+    }
+
+    private boolean isAddonItem(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return false;
+        return item.getItemMeta().getPersistentDataContainer().has(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
+    }
+
+    private void handleAddonItem(Player player, ItemStack item) {
+        String type = item.getItemMeta().getPersistentDataContainer().get(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
+        if (type == null) return;
+        switch (type) {
+            case "crafting" -> AddonGUI.openCrafting(player);
+            case "jukebox" -> AddonGUI.openJukebox(player, null);
+            case "quiver" -> AddonGUI.openQuiver(player, null);
+            case "enchant" -> AddonGUI.openEnchant(player, null);
+        }
     }
 
     private boolean hasAttachedBackpacks(ItemStack chest) {
