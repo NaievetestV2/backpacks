@@ -31,7 +31,7 @@ public class BackpackRecipeManager {
     private void registerBackpack(BackpackTier tier, Material dye) {
         NamespacedKey key = BackpacksPlugin.key("backpack_" + tier.key());
         ShapedRecipe recipe = new ShapedRecipe(key, BackpackData.createItem(tier));
-        recipe.shape("LLL", "LCL", "LIL");
+        recipe.shape("LDL", "LCL", "ILI");
         recipe.setIngredient('L', Material.LEATHER);
         recipe.setIngredient('C', Material.CHEST);
         recipe.setIngredient('I', tier.ingredient());
