@@ -1,14 +1,11 @@
 package com.backpacks.plugin.listener;
 
 import com.backpacks.plugin.BackpacksPlugin;
-import com.backpacks.plugin.addon.AddonItemFactory;
 import com.backpacks.plugin.backpack.BackpackData;
 import com.backpacks.plugin.backpack.BackpackManager;
-import com.backpacks.plugin.backpack.BackpackTier;
 import com.backpacks.plugin.gui.AddonGUI;
 import com.backpacks.plugin.gui.BackpackGUI;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,7 +13,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -24,13 +20,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BackpackListener implements Listener {
 
     private final BackpackManager manager;
+    private final Map<UUID, BackpackGUI> openGuis = new HashMap<>();
 
     public BackpackListener(BackpackManager manager) {
         this.manager = manager;
@@ -76,7 +71,9 @@ public class BackpackListener implements Listener {
         if (id == null) return;
         BackpackData data = manager.getBackpack(id);
         if (data == null) return;
-        new BackpackGUI(player, data).open();
+        BackpackGUI gui = new BackpackGUI(player, data);
+        openGuis.put(player.getUniqueId(), gui);
+        gui.open();
     }
 
     private void openChestplateSelection(Player player, ItemStack chest) {
@@ -138,7 +135,9 @@ public class BackpackListener implements Listener {
                 if (id != null) {
                     BackpackData data = manager.getBackpack(id);
                     if (data != null) {
-                        new BackpackGUI(player, data).open();
+                        BackpackGUI gui = new BackpackGUI(player, data);
+                        openGuis.put(player.getUniqueId(), gui);
+                        gui.open();
                     }
                 }
             }
@@ -166,9 +165,11 @@ public class BackpackListener implements Listener {
         Player player = (Player) event.getWhoClicked();
 
         if (action.equals("page_next")) {
-            new BackpackGUI(player, manager.getBackpack(BackpackData.readId(event.getClickedInventory().getItem(event.getSlot())))).nextPage();
+            BackpackGUI gui = openGuis.get(player.getUniqueId());
+            if (gui != null) gui.nextPage();
         } else if (action.equals("page_prev")) {
-            new BackpackGUI(player, manager.getBackpack(BackpackData.readId(event.getClickedInventory().getItem(event.getSlot())))).prevPage();
+            BackpackGUI gui = openGuis.get(player.getUniqueId());
+            if (gui != null) gui.prevPage();
         } else if (action.equals("detach")) {
             player.closeInventory();
         }
@@ -186,5 +187,10 @@ public class BackpackListener implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
+        BackpackGUI gui = openGuis.remove(player.getUniqueId());
+        if (gui != null) {
+            gui.saveContents();
+        }
     }
 }

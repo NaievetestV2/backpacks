@@ -5,20 +5,20 @@ import com.backpacks.plugin.backpack.BackpackTier;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
-import java.util.UUID;
 
 public class BackpackGUI {
 
     private final Player player;
     private final BackpackData data;
     private int page;
+    private Inventory openInventory;
 
     public BackpackGUI(Player player, BackpackData data) {
         this.player = player;
@@ -28,9 +28,9 @@ public class BackpackGUI {
 
     public void open() {
         int rows = data.tier() == BackpackTier.NETHERITE ? 4 : 3;
-        Inventory inv = Bukkit.createInventory(player, rows * 9, "Backpack - " + capitalize(data.tier().key()));
-        render(inv);
-        player.openInventory(inv);
+        openInventory = Bukkit.createInventory(player, rows * 9, "Backpack - " + capitalize(data.tier().key()));
+        render(openInventory);
+        player.openInventory(openInventory);
     }
 
     public void render(Inventory inv) {
@@ -86,6 +86,18 @@ public class BackpackGUI {
             detach.setItemMeta(detachMeta);
         }
         inv.setItem(addonStart + 8, detach);
+    }
+
+    public void saveContents() {
+        if (openInventory == null) return;
+        List<ItemStack> items = data.items();
+        int start = page * 45;
+        for (int i = 0; i < 45; i++) {
+            int index = start + i;
+            if (index < items.size()) {
+                items.set(index, openInventory.getItem(i));
+            }
+        }
     }
 
     public void nextPage() {
