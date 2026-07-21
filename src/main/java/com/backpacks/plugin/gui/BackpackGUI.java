@@ -98,6 +98,15 @@ public class BackpackGUI {
                 items.set(index, openInventory.getItem(i));
             }
         }
+        data.addons().clear();
+        for (ItemStack item : items) {
+            if (item != null && item.hasItemMeta()) {
+                String addon = item.getItemMeta().getPersistentDataContainer().get(com.backpacks.plugin.BackpacksPlugin.key("addon_type"), org.bukkit.persistence.PersistentDataType.STRING);
+                if (addon != null) {
+                    data.addAddon(addon);
+                }
+            }
+        }
     }
 
     public void nextPage() {
