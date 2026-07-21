@@ -1,0 +1,11 @@
+com/backpacks/plugin/backpack/BackpackTier.class
+com/backpacks/plugin/addon/BackpackAddon.class
+com/backpacks/plugin/gui/BackpackGUI.class
+com/backpacks/plugin/backpack/BackpackData.class
+com/backpacks/plugin/gui/AddonGUI.class
+com/backpacks/plugin/addon/AddonItemFactory.class
+com/backpacks/plugin/BackpacksPlugin.class
+com/backpacks/plugin/recipe/BackpackRecipeManager.class
+com/backpacks/plugin/backpack/BackpackManager.class
+com/backpacks/plugin/listener/BackpackListener.class
+com/backpacks/plugin/command/BackpackCommand.class

@@ -1,0 +1,11 @@
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/BackpacksPlugin.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/addon/AddonItemFactory.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/addon/BackpackAddon.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/backpack/BackpackData.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/backpack/BackpackManager.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/backpack/BackpackTier.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/command/BackpackCommand.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/gui/AddonGUI.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/gui/BackpackGUI.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/listener/BackpackListener.java
+/home/naievetest/Documents/projs/backpacks/src/main/java/com/backpacks/plugin/recipe/BackpackRecipeManager.java

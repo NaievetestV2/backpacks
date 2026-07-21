@@ -1,0 +1,122 @@
+package com.backpacks.plugin.gui;
+
+import com.backpacks.plugin.backpack.BackpackData;
+import com.backpacks.plugin.backpack.BackpackTier;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
+
+import java.util.List;
+import java.util.UUID;
+
+public class BackpackGUI {
+
+    private final Player player;
+    private final BackpackData data;
+    private int page;
+
+    public BackpackGUI(Player player, BackpackData data) {
+        this.player = player;
+        this.data = data;
+        this.page = 0;
+    }
+
+    public void open() {
+        int rows = data.tier() == BackpackTier.NETHERITE ? 4 : 3;
+        Inventory inv = Bukkit.createInventory(player, rows * 9, "Backpack - " + capitalize(data.tier().key()));
+        render(inv);
+        player.openInventory(inv);
+    }
+
+    public void render(Inventory inv) {
+        List<ItemStack> items = data.items();
+        int start = page * 45;
+        for (int i = 0; i < 45; i++) {
+            int index = start + i;
+            if (index < items.size()) {
+                inv.setItem(i, items.get(index));
+            } else {
+                inv.setItem(i, new ItemStack(Material.AIR));
+            }
+        }
+
+        int addonStart = rowsForTier() * 9 + 3;
+        if (data.hasAddon("crafting")) {
+            inv.setItem(addonStart + 0, addonItem(Material.CRAFTING_TABLE, "Crafting"));
+        }
+        if (data.hasAddon("jukebox")) {
+            inv.setItem(addonStart + 1, addonItem(Material.JUKEBOX, "Jukebox"));
+        }
+        if (data.hasAddon("quiver")) {
+            inv.setItem(addonStart + 2, addonItem(Material.BOW, "Quiver"));
+        }
+        if (data.hasAddon("enchant")) {
+            inv.setItem(addonStart + 3, addonItem(Material.ENCHANTING_TABLE, "Enchant"));
+        }
+
+        if (data.tier() == BackpackTier.NETHERITE) {
+            ItemStack prev = new ItemStack(Material.ARROW);
+            ItemMeta prevMeta = prev.getItemMeta();
+            if (prevMeta != null) {
+                prevMeta.setDisplayName("§7Previous Page");
+                prevMeta.getPersistentDataContainer().set(com.backpacks.plugin.BackpacksPlugin.key("gui_action"), PersistentDataType.STRING, "page_prev");
+                prev.setItemMeta(prevMeta);
+            }
+            ItemStack next = new ItemStack(Material.ARROW);
+            ItemMeta nextMeta = next.getItemMeta();
+            if (nextMeta != null) {
+                nextMeta.setDisplayName("§7Next Page");
+                nextMeta.getPersistentDataContainer().set(com.backpacks.plugin.BackpacksPlugin.key("gui_action"), PersistentDataType.STRING, "page_next");
+                next.setItemMeta(nextMeta);
+            }
+            inv.setItem(addonStart + 5, prev);
+            inv.setItem(addonStart + 6, next);
+        }
+
+        ItemStack detach = new ItemStack(Material.BARRIER);
+        ItemMeta detachMeta = detach.getItemMeta();
+        if (detachMeta != null) {
+            detachMeta.setDisplayName("§cDetach from Chestplate");
+            detachMeta.getPersistentDataContainer().set(com.backpacks.plugin.BackpacksPlugin.key("gui_action"), PersistentDataType.STRING, "detach");
+            detach.setItemMeta(detachMeta);
+        }
+        inv.setItem(addonStart + 8, detach);
+    }
+
+    public void nextPage() {
+        if (data.tier() == BackpackTier.NETHERITE) {
+            page = 1;
+            open();
+        }
+    }
+
+    public void prevPage() {
+        page = 0;
+        open();
+    }
+
+    private int rowsForTier() {
+        return data.tier() == BackpackTier.NETHERITE ? 4 : 3;
+    }
+
+    private ItemStack addonItem(Material mat, String name) {
+        ItemStack stack = new ItemStack(mat);
+        ItemMeta meta = stack.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§b" + name);
+            meta.getPersistentDataContainer().set(com.backpacks.plugin.BackpacksPlugin.key("addon_type"), PersistentDataType.STRING, name.toLowerCase());
+            stack.setItemMeta(meta);
+        }
+        return stack;
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+}
