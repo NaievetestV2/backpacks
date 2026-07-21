@@ -228,8 +228,28 @@ public class BackpackListener implements Listener {
                 event.getWhoClicked().getInventory().addItem(event.getCurrentItem());
             }
         } else if (title.equals("Backpack Jukebox")) {
-            if (event.getSlot() == 4) {
+            Player who = (Player) event.getWhoClicked();
+            if (event.getSlot() == 4 && event.getCurrentItem() != null && event.getCurrentItem().getType().toString().endsWith("_DISC")) {
                 event.setCancelled(true);
+                String disc = event.getCurrentItem().getType().toString();
+                who.stopAllSounds();
+                who.playSound(who.getLocation(), org.bukkit.Sound.valueOf(disc), 1.0f, 1.0f);
+                who.sendMessage("§aNow playing: §e" + disc.replace("_", " ").toLowerCase());
+            } else if (event.getSlot() == 4) {
+                event.setCancelled(true);
+            }
+        } else if (title.equals("Backpack Enchant")) {
+            Player who = (Player) event.getWhoClicked();
+            int bookshelves = 0;
+            for (ItemStack item : event.getInventory().getContents()) {
+                if (item != null && item.getType() == Material.BOOKSHELF) {
+                    bookshelves += item.getAmount();
+                }
+            }
+            if (bookshelves > 0 && event.getSlotType() == InventoryType.SlotType.RESULT && event.getCurrentItem() != null) {
+                event.setCancelled(true);
+                who.sendMessage("§aEnchanting with " + bookshelves + " bookshelf power!");
+                who.getInventory().addItem(event.getCurrentItem());
             }
         }
     }
