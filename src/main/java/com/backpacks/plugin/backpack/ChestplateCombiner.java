@@ -1,6 +1,7 @@
 package com.backpacks.plugin.backpack;
 
 import com.backpacks.plugin.BackpacksPlugin;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -15,7 +16,7 @@ public class ChestplateCombiner {
 
     public static boolean attach(Player player, ItemStack backpack) {
         ItemStack chest = player.getInventory().getChestplate();
-        if (chest == null || chest.getType() != org.bukkit.Material.LEATHER_CHESTPLATE) {
+        if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) {
             player.sendMessage("§cYou must be wearing a leather chestplate");
             return false;
         }
@@ -33,14 +34,18 @@ public class ChestplateCombiner {
         parts.add(backpack.getType() + ":" + id);
         container.set(BackpacksPlugin.key("attached_backpacks"), PersistentDataType.STRING, String.join(",", parts));
         chest.setItemMeta(meta);
-        player.getInventory().setItemInMainHand(null);
+        if (backpack.getAmount() > 1) {
+            backpack.setAmount(backpack.getAmount() - 1);
+        } else {
+            player.getInventory().setItemInMainHand(null);
+        }
         player.sendMessage("§aBackpack attached to chestplate");
         return true;
     }
 
     public static boolean toggleGlider(Player player) {
         ItemStack chest = player.getInventory().getChestplate();
-        if (chest == null || chest.getType() != org.bukkit.Material.LEATHER_CHESTPLATE) {
+        if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) {
             player.sendMessage("§cYou must be wearing a leather chestplate");
             return false;
         }
