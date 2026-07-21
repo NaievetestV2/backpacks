@@ -98,6 +98,7 @@ public class BackpackListener implements Listener {
     @EventHandler
     public void onBowShoot(org.bukkit.event.entity.EntityShootBowEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
+        if (player.getInventory().contains(Material.ARROW)) return;
         ItemStack chest = player.getInventory().getChestplate();
         if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) return;
         ItemMeta meta = chest.getItemMeta();
@@ -112,10 +113,19 @@ public class BackpackListener implements Listener {
             UUID id = UUID.fromString(split[1]);
             BackpackData data = manager.getBackpack(id);
             if (data == null || !data.hasAddon("quiver")) continue;
-            for (ItemStack quiverItem : data.items()) {
+            for (int i = 0; i < data.items().size(); i++) {
+                ItemStack quiverItem = data.items().get(i);
                 if (quiverItem != null && quiverItem.getType() == Material.ARROW) {
-                    player.getInventory().addItem(quiverItem);
-                    quiverItem.setAmount(0);
+                    int amount = Math.min(quiverItem.getAmount(), 64);
+                    ItemStack give = new ItemStack(Material.ARROW, amount);
+                    HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(give);
+                    if (remaining.isEmpty()) {
+                        quiverItem.setAmount(quiverItem.getAmount() - amount);
+                        if (quiverItem.getAmount() <= 0) {
+                            data.items().set(i, new ItemStack(Material.AIR));
+                        }
+                    }
+                    break;
                 }
             }
         }
