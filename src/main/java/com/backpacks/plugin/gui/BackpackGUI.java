@@ -111,12 +111,14 @@ public class BackpackGUI {
 
     public void nextPage() {
         if (data.tier() == BackpackTier.NETHERITE) {
+            saveContents();
             page = 1;
             open();
         }
     }
 
     public void prevPage() {
+        saveContents();
         page = 0;
         open();
     }
