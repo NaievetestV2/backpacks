@@ -33,7 +33,7 @@ public class BackpackListener implements Listener {
         this.manager = manager;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
@@ -41,7 +41,6 @@ public class BackpackListener implements Listener {
 
         String action = event.getAction().toString();
         boolean rightClick = action.contains("RIGHT_CLICK");
-        boolean leftClick = action.contains("LEFT_CLICK");
 
         if (rightClick) {
             if (isBackpack(item)) {
@@ -49,35 +48,34 @@ public class BackpackListener implements Listener {
                 event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                 event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 openBackpack(player, item);
-                return;
             } else if (isAddonItem(item)) {
                 event.setCancelled(true);
                 event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                 event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 handleAddonItem(player, item);
-                return;
             }
-        } else if (leftClick) {
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
+    public void onInteractFallback(PlayerInteractEvent event) {
+        if (event.isCancelled()) return;
+        Player player = event.getPlayer();
+        ItemStack item = event.getItem();
+        if (item == null) return;
+
+        String action = event.getAction().toString();
+        if (action.contains("RIGHT_CLICK")) {
             if (isBackpack(item)) {
-                PlayerInventory inv = player.getInventory();
-                ItemStack chest = inv.getChestplate();
-                if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE) {
-                    event.setCancelled(true);
-                    event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                    com.backpacks.plugin.backpack.ChestplateCombiner.attach(player, item);
-                    return;
-                }
-            } else {
-                PlayerInventory inv = player.getInventory();
-                ItemStack chest = inv.getChestplate();
-                if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
-                    if (player.isSneaking()) {
-                        event.setCancelled(true);
-                        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                        openChestplateSelection(player, chest);
-                        return;
-                    }
-                }
+                event.setCancelled(true);
+                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+                openBackpack(player, item);
+            } else if (isAddonItem(item)) {
+                event.setCancelled(true);
+                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+                handleAddonItem(player, item);
             }
         }
     }
