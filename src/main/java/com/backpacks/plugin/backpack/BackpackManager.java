@@ -20,4 +20,8 @@ public class BackpackManager {
     public void removeBackpack(UUID id) {
         backpacks.remove(id);
     }
+
+    public void register(BackpackData data) {
+        backpacks.put(data.id(), data);
+    }
 }

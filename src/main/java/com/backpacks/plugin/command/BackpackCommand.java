@@ -42,6 +42,10 @@ public class BackpackCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
             ItemStack backpack = BackpackData.createItem(tier);
+            UUID id = BackpackData.readId(backpack);
+            if (id != null) {
+                manager.register(new com.backpacks.plugin.backpack.BackpackData(id, tier));
+            }
             target.getInventory().addItem(backpack);
             BackpacksPlugin.unlockRecipes(target);
             sender.sendMessage("§aGave " + capitalize(tier.key()) + " backpack to " + target.getName());

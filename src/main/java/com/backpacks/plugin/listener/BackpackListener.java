@@ -3,6 +3,7 @@ package com.backpacks.plugin.listener;
 import com.backpacks.plugin.BackpacksPlugin;
 import com.backpacks.plugin.backpack.BackpackData;
 import com.backpacks.plugin.backpack.BackpackManager;
+import com.backpacks.plugin.backpack.BackpackTier;
 import com.backpacks.plugin.gui.AddonGUI;
 import com.backpacks.plugin.gui.BackpackGUI;
 import org.bukkit.Material;
@@ -167,8 +168,14 @@ public class BackpackListener implements Listener {
         }
         BackpackData data = manager.getBackpack(id);
         if (data == null) {
-            player.sendMessage("§cBackpack data not loaded");
-            return;
+            BackpackTier tier = BackpackData.readTier(item);
+            if (tier == null) {
+                player.sendMessage("§cBackpack tier not found");
+                return;
+            }
+            data = new BackpackData(id, tier);
+            manager.register(data);
+            player.sendMessage("§eBackpack data restored");
         }
         BackpackGUI gui = new BackpackGUI(player, data);
         openGuis.put(player.getUniqueId(), gui);
