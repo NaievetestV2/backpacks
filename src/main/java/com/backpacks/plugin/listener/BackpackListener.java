@@ -7,15 +7,14 @@ import com.backpacks.plugin.gui.AddonGUI;
 import com.backpacks.plugin.gui.BackpackGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -34,7 +33,7 @@ public class BackpackListener implements Listener {
         this.manager = manager;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
@@ -43,9 +42,13 @@ public class BackpackListener implements Listener {
         if (event.getAction().toString().contains("RIGHT")) {
             if (isBackpack(item)) {
                 event.setCancelled(true);
+                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 openBackpack(player, item);
             } else if (isAddonItem(item)) {
                 event.setCancelled(true);
+                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 handleAddonItem(player, item);
             }
         } else if (event.getAction().toString().contains("LEFT")) {
@@ -54,14 +57,16 @@ public class BackpackListener implements Listener {
                 ItemStack chest = inv.getChestplate();
                 if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE) {
                     event.setCancelled(true);
+                    event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                     com.backpacks.plugin.backpack.ChestplateCombiner.attach(player, item);
                 }
             } else {
                 PlayerInventory inv = player.getInventory();
                 ItemStack chest = inv.getChestplate();
                 if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
-                    event.setCancelled(true);
                     if (player.isSneaking()) {
+                        event.setCancelled(true);
+                        event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                         openChestplateSelection(player, chest);
                     }
                 }
@@ -69,7 +74,7 @@ public class BackpackListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onSneak(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
         if (!event.isSneaking()) return;
@@ -81,7 +86,7 @@ public class BackpackListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onToggleGlide(EntityToggleGlideEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         ItemStack chest = player.getInventory().getChestplate();
@@ -95,7 +100,7 @@ public class BackpackListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBowShoot(org.bukkit.event.entity.EntityShootBowEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         if (player.getInventory().contains(Material.ARROW)) return;
@@ -202,7 +207,7 @@ public class BackpackListener implements Listener {
         return list;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(InventoryClickEvent event) {
         String title = event.getView().getTitle();
         if (title.startsWith("Backpack - ")) {

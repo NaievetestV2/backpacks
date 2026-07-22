@@ -1,0 +1,14 @@
+backpacks:
+  give-recipes-on-obtain: true
+  max-attached-backpacks: 6
+  enable-crafting-addon: true
+  enable-jukebox-addon: true
+  enable-quiver-addon: true
+  enable-enchant-addon: true
+  netherite-upgrade-requires-template: true
+  gui:
+    play-sound-on-open: true
+    play-sound-on-close: true
+  quiver:
+    auto-fill-bow: true
+    check-inventory-first: true

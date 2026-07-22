@@ -1,5 +1,6 @@
 package com.backpacks.plugin.command;
 
+import com.backpacks.plugin.BackpacksPlugin;
 import com.backpacks.plugin.backpack.BackpackManager;
 import com.backpacks.plugin.backpack.BackpackData;
 import com.backpacks.plugin.backpack.BackpackTier;
@@ -8,6 +9,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,7 +41,9 @@ public class BackpackCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage("§cInvalid tier");
                 return true;
             }
-            target.getInventory().addItem(BackpackData.createItem(tier));
+            ItemStack backpack = BackpackData.createItem(tier);
+            target.getInventory().addItem(backpack);
+            BackpacksPlugin.unlockRecipes(target);
             sender.sendMessage("§aGave " + capitalize(tier.key()) + " backpack to " + target.getName());
             return true;
         } else if (args[0].equalsIgnoreCase("reload")) {

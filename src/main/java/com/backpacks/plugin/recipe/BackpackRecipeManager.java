@@ -33,15 +33,21 @@ public class BackpackRecipeManager {
         ShapedRecipe recipe = new ShapedRecipe(key, BackpackData.createItem(tier));
         recipe.shape("LDL", "LCL", "ILI");
         recipe.setIngredient('L', Material.LEATHER);
+        recipe.setIngredient('D', dye);
         recipe.setIngredient('C', Material.CHEST);
         recipe.setIngredient('I', tier.ingredient());
-        recipe.setIngredient('D', dye);
         plugin.getServer().addRecipe(recipe);
     }
 
     private void registerAddon(String name, Material base) {
         NamespacedKey key = BackpacksPlugin.key("addon_" + name);
-        SmithingTransformRecipe recipe = new SmithingTransformRecipe(key, AddonItemFactory.create(name), new RecipeChoice.ExactChoice(new ItemStack(base)), new RecipeChoice.MaterialChoice(Material.DIAMOND), null);
+        SmithingTransformRecipe recipe = new SmithingTransformRecipe(
+            key,
+            AddonItemFactory.create(name),
+            new RecipeChoice.ExactChoice(new ItemStack(base)),
+            new RecipeChoice.MaterialChoice(Material.DIAMOND),
+            new RecipeChoice.ExactChoice(new ItemStack(Material.PAPER))
+        );
         plugin.getServer().addRecipe(recipe);
     }
 }

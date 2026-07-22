@@ -5,7 +5,9 @@ import com.backpacks.plugin.command.BackpackCommand;
 import com.backpacks.plugin.listener.BackpackListener;
 import com.backpacks.plugin.recipe.BackpackRecipeManager;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public final class BackpacksPlugin extends JavaPlugin {
 
@@ -15,12 +17,37 @@ public final class BackpacksPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         BackpackManager manager = new BackpackManager();
         BackpackRecipeManager recipeManager = new BackpackRecipeManager(this);
-        recipeManager.register();
         getServer().getPluginManager().registerEvents(new BackpackListener(manager), this);
         BackpackCommand command = new BackpackCommand(manager);
         getCommand("backpack").setExecutor(command);
         getCommand("backpack").setTabCompleter(command);
+        getLogger().info("Backpacks plugin enabled!");
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                recipeManager.register();
+                getLogger().info("Recipes registered!");
+            }
+        }.runTaskLater(this, 20L);
+    }
+
+    @Override
+    public void onDisable() {
+        getLogger().info("Backpacks plugin disabled!");
+    }
+
+    public static void unlockRecipes(Player player) {
+        player.discoverRecipe(key("backpack_copper"));
+        player.discoverRecipe(key("backpack_iron"));
+        player.discoverRecipe(key("backpack_gold"));
+        player.discoverRecipe(key("backpack_diamond"));
+        player.discoverRecipe(key("backpack_netherite"));
+        player.discoverRecipe(key("addon_crafting"));
+        player.discoverRecipe(key("addon_jukebox"));
+        player.discoverRecipe(key("addon_quiver"));
+        player.discoverRecipe(key("addon_enchant"));
     }
 }
