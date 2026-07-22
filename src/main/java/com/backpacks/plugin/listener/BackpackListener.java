@@ -33,49 +33,66 @@ public class BackpackListener implements Listener {
         this.manager = manager;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-        if (item == null) return;
-
-        String action = event.getAction().toString();
-        boolean rightClick = action.contains("RIGHT_CLICK");
-
-        if (rightClick) {
-            if (isBackpack(item)) {
-                event.setCancelled(true);
-                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-                openBackpack(player, item);
-            } else if (isAddonItem(item)) {
-                event.setCancelled(true);
-                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-                handleAddonItem(player, item);
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onInteractDebug(PlayerInteractEvent event) {
+        if (event.getAction().toString().contains("RIGHT_CLICK")) {
+            ItemStack item = event.getItem();
+            if (item == null) {
+                item = event.getPlayer().getInventory().getItemInMainHand();
+            }
+            if (item != null && item.getType() == Material.CHEST) {
+                event.getPlayer().sendMessage("§7[DEBUG] Right-clicked chest, action=" + event.getAction() + ", cancelled=" + event.isCancelled());
             }
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false)
-    public void onInteractFallback(PlayerInteractEvent event) {
-        if (event.isCancelled()) return;
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack item = event.getItem();
+
+        if (item == null) {
+            item = player.getInventory().getItemInMainHand();
+        }
         if (item == null) return;
 
         String action = event.getAction().toString();
         if (action.contains("RIGHT_CLICK")) {
-            if (isBackpack(item)) {
-                event.setCancelled(true);
-                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-                openBackpack(player, item);
-            } else if (isAddonItem(item)) {
-                event.setCancelled(true);
-                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-                handleAddonItem(player, item);
+            handleRightClick(player, item, event);
+        } else if (action.contains("LEFT_CLICK")) {
+            handleLeftClick(player, item, event);
+        }
+    }
+
+    private void handleRightClick(Player player, ItemStack item, PlayerInteractEvent event) {
+        if (isBackpack(item)) {
+            event.setCancelled(true);
+            event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+            event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+            player.sendMessage("§aOpening backpack...");
+            openBackpack(player, item);
+        }
+    }
+
+    private void handleLeftClick(Player player, ItemStack item, PlayerInteractEvent event) {
+        PlayerInventory inv = player.getInventory();
+        ItemStack chest = inv.getChestplate();
+        if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE) {
+            event.setCancelled(true);
+            event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+            com.backpacks.plugin.backpack.ChestplateCombiner.attach(player, item);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onInteractMonitor(PlayerInteractEvent event) {
+        if (event.getAction().toString().contains("RIGHT_CLICK")) {
+            ItemStack item = event.getItem();
+            if (item == null) {
+                item = event.getPlayer().getInventory().getItemInMainHand();
+            }
+            if (item != null && isBackpack(item) && !event.isCancelled()) {
+                event.getPlayer().sendMessage("§cBackpack was NOT opened by backpack plugin - another plugin cancelled it");
             }
         }
     }
@@ -144,9 +161,15 @@ public class BackpackListener implements Listener {
 
     private void openBackpack(Player player, ItemStack item) {
         UUID id = BackpackData.readId(item);
-        if (id == null) return;
+        if (id == null) {
+            player.sendMessage("§cNo backpack data found on this item");
+            return;
+        }
         BackpackData data = manager.getBackpack(id);
-        if (data == null) return;
+        if (data == null) {
+            player.sendMessage("§cBackpack data not loaded");
+            return;
+        }
         BackpackGUI gui = new BackpackGUI(player, data);
         openGuis.put(player.getUniqueId(), gui);
         gui.open();
@@ -172,17 +195,6 @@ public class BackpackListener implements Listener {
     private boolean isAddonItem(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return false;
         return item.getItemMeta().getPersistentDataContainer().has(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
-    }
-
-    private void handleAddonItem(Player player, ItemStack item) {
-        String type = item.getItemMeta().getPersistentDataContainer().get(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
-        if (type == null) return;
-        switch (type) {
-            case "crafting" -> AddonGUI.openCrafting(player);
-            case "jukebox" -> AddonGUI.openJukebox(player, null);
-            case "quiver" -> AddonGUI.openQuiver(player, null);
-            case "enchant" -> AddonGUI.openEnchant(player, null);
-        }
     }
 
     private boolean hasAttachedBackpacks(ItemStack chest) {
