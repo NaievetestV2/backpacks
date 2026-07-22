@@ -39,19 +39,25 @@ public class BackpackListener implements Listener {
         ItemStack item = event.getItem();
         if (item == null) return;
 
-        if (event.getAction().toString().contains("RIGHT")) {
+        String action = event.getAction().toString();
+        boolean rightClick = action.contains("RIGHT_CLICK");
+        boolean leftClick = action.contains("LEFT_CLICK");
+
+        if (rightClick) {
             if (isBackpack(item)) {
                 event.setCancelled(true);
                 event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                 event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 openBackpack(player, item);
+                return;
             } else if (isAddonItem(item)) {
                 event.setCancelled(true);
                 event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                 event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 handleAddonItem(player, item);
+                return;
             }
-        } else if (event.getAction().toString().contains("LEFT")) {
+        } else if (leftClick) {
             if (isBackpack(item)) {
                 PlayerInventory inv = player.getInventory();
                 ItemStack chest = inv.getChestplate();
@@ -59,6 +65,7 @@ public class BackpackListener implements Listener {
                     event.setCancelled(true);
                     event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                     com.backpacks.plugin.backpack.ChestplateCombiner.attach(player, item);
+                    return;
                 }
             } else {
                 PlayerInventory inv = player.getInventory();
@@ -68,6 +75,7 @@ public class BackpackListener implements Listener {
                         event.setCancelled(true);
                         event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
                         openChestplateSelection(player, chest);
+                        return;
                     }
                 }
             }
