@@ -5,7 +5,6 @@ import com.backpacks.plugin.backpack.BackpackTier;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,8 +26,9 @@ public class BackpackGUI {
     }
 
     public void open() {
-        int rows = data.tier() == BackpackTier.NETHERITE ? 4 : 3;
-        openInventory = Bukkit.createInventory(player, rows * 9, "Backpack - " + capitalize(data.tier().key()));
+        int totalRows = 6;
+        int size = totalRows * 9;
+        openInventory = Bukkit.createInventory(player, size, "Backpack - " + capitalize(data.tier().key()));
         render(openInventory);
         player.openInventory(openInventory);
     }
@@ -36,7 +36,8 @@ public class BackpackGUI {
     public void render(Inventory inv) {
         List<ItemStack> items = data.items();
         int start = page * 45;
-        for (int i = 0; i < 45; i++) {
+        int totalSlots = inv.getSize();
+        for (int i = 0; i < totalSlots; i++) {
             int index = start + i;
             if (index < items.size()) {
                 inv.setItem(i, items.get(index));
@@ -45,7 +46,7 @@ public class BackpackGUI {
             }
         }
 
-        int addonStart = rowsForTier() * 9 + 3;
+        int addonStart = 5 * 9;
         if (data.hasAddon("crafting")) {
             inv.setItem(addonStart + 0, addonItem(Material.CRAFTING_TABLE, "Crafting"));
         }
@@ -92,7 +93,8 @@ public class BackpackGUI {
         if (openInventory == null) return;
         List<ItemStack> items = data.items();
         int start = page * 45;
-        for (int i = 0; i < 45; i++) {
+        int totalSlots = openInventory.getSize();
+        for (int i = 0; i < totalSlots; i++) {
             int index = start + i;
             if (index < items.size()) {
                 items.set(index, openInventory.getItem(i));
@@ -121,10 +123,6 @@ public class BackpackGUI {
         saveContents();
         page = 0;
         open();
-    }
-
-    private int rowsForTier() {
-        return data.tier() == BackpackTier.NETHERITE ? 4 : 3;
     }
 
     private ItemStack addonItem(Material mat, String name) {
