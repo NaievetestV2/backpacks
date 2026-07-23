@@ -46,7 +46,7 @@ public class BackpackRecipeManager {
             AddonItemFactory.create(name),
             new RecipeChoice.ExactChoice(new ItemStack(base)),
             new RecipeChoice.MaterialChoice(Material.DIAMOND),
-            new RecipeChoice.ExactChoice(new ItemStack(Material.PAPER))
+            null
         );
         plugin.getServer().addRecipe(recipe);
     }
