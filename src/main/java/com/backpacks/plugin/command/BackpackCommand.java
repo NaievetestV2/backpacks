@@ -47,6 +47,7 @@ public class BackpackCommand implements CommandExecutor, TabCompleter {
                 manager.register(new com.backpacks.plugin.backpack.BackpackData(id, tier));
             }
             target.getInventory().addItem(backpack);
+            manager.save();
             BackpacksPlugin.unlockRecipes(target);
             sender.sendMessage("§aGave " + capitalize(tier.key()) + " backpack to " + target.getName());
             return true;

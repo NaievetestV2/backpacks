@@ -46,6 +46,7 @@ public final class BackpacksPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        BackpackManager.getInstance().save();
         getLogger().info("Backpacks plugin disabled!");
     }
 

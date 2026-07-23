@@ -38,10 +38,11 @@ public class BackpackGUI {
         int start = page * 45;
         int totalSlots = inv.getSize();
         for (int i = 0; i < totalSlots; i++) {
+            if (i >= 45) break;
             int index = start + i;
             if (index < items.size()) {
                 inv.setItem(i, items.get(index));
-            } else if (i < 45) {
+            } else {
                 inv.setItem(i, new ItemStack(Material.AIR));
             }
         }
@@ -93,8 +94,7 @@ public class BackpackGUI {
         if (openInventory == null) return;
         List<ItemStack> items = data.items();
         int start = page * 45;
-        int totalSlots = openInventory.getSize();
-        for (int i = 0; i < Math.min(totalSlots, 45); i++) {
+        for (int i = 0; i < 45; i++) {
             int index = start + i;
             if (index < items.size()) {
                 items.set(index, openInventory.getItem(i));
@@ -109,6 +109,7 @@ public class BackpackGUI {
                 }
             }
         }
+        com.backpacks.plugin.backpack.BackpackManager.getInstance().save();
     }
 
     public void nextPage() {

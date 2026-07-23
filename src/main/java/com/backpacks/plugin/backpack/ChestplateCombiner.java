@@ -40,6 +40,7 @@ public class ChestplateCombiner {
             player.getInventory().setItemInMainHand(null);
         }
         player.sendMessage("§aBackpack attached to chestplate");
+        com.backpacks.plugin.backpack.BackpackManager.getInstance().save();
         return true;
     }
 
@@ -75,6 +76,7 @@ public class ChestplateCombiner {
             }
         }
         player.sendMessage("§aBackpack detached from chestplate");
+        com.backpacks.plugin.backpack.BackpackManager.getInstance().save();
         return true;
     }
 }

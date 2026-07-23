@@ -48,6 +48,7 @@ public class BackpackManager {
 
     public void register(BackpackData data) {
         backpacks.put(data.id(), data);
+        save();
     }
 
     public void save() {

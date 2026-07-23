@@ -46,76 +46,24 @@ public class BackpackListener implements Listener {
 
         if (action.contains("RIGHT_CLICK")) {
             if (isBackpack(item)) {
-                if (canEquipDirectly(player)) {
-                    event.setCancelled(true);
-                    event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-                    event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                    equipDirectly(player, item);
-                    return;
-                }
                 event.setCancelled(true);
                 event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                player.sendMessage("§aOpening backpack...");
                 openBackpack(player, item);
             } else if (isAddonItem(item)) {
                 event.setCancelled(true);
                 event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
                 event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                handleAddonItem(player, item);
+                player.sendMessage("§cHold a backpack and put this item inside it, then reopen the backpack.");
             }
         } else if (action.contains("LEFT_CLICK")) {
             handleLeftClick(player, item, event);
         }
     }
 
-    private boolean canEquipDirectly(Player player) {
-        ItemStack chest = player.getInventory().getChestplate();
-        return chest == null || chest.getType().isAir();
-    }
-
-    private void equipDirectly(Player player, ItemStack item) {
-        UUID id = BackpackData.readId(item);
-        if (id == null) {
-            player.sendMessage("§cNo backpack data found");
-            return;
-        }
-        BackpackData data = manager.getBackpack(id);
-        if (data == null) {
-            BackpackTier tier = BackpackData.readTier(item);
-            if (tier == null) {
-                player.sendMessage("§cBackpack tier not found");
-                return;
-            }
-            data = new BackpackData(id, tier);
-            manager.register(data);
-        }
-        ItemStack newBackpack = BackpackData.createItem(data.tier());
-        UUID newId = BackpackData.readId(newBackpack);
-        if (newId != null && newBackpack.getItemMeta() != null) {
-            newBackpack.getItemMeta().getPersistentDataContainer().set(BackpacksPlugin.key("backpack_id"), PersistentDataType.STRING, id.toString());
-        }
-        player.getInventory().setChestplate(newBackpack);
-        if (item.getAmount() > 1) {
-            item.setAmount(item.getAmount() - 1);
-        } else {
-            player.getInventory().setItemInMainHand(null);
-        }
-        player.sendMessage("§aBackpack equipped on chest!");
-    }
-
     private void handleLeftClick(Player player, ItemStack item, PlayerInteractEvent event) {
         PlayerInventory inv = player.getInventory();
         ItemStack chest = inv.getChestplate();
-
-        if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
-            if (isBackpack(item)) {
-                event.setCancelled(true);
-                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-                openChestplateSelection(player, chest);
-                return;
-            }
-        }
 
         if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && isBackpack(item)) {
             event.setCancelled(true);
@@ -130,8 +78,7 @@ public class BackpackListener implements Listener {
         if (!event.isSneaking()) return;
         if (player.isInsideVehicle()) return;
 
-        PlayerInventory inv = player.getInventory();
-        ItemStack chest = inv.getChestplate();
+        ItemStack chest = player.getInventory().getChestplate();
         if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
             openChestplateSelection(player, chest);
         }
@@ -244,31 +191,6 @@ public class BackpackListener implements Listener {
         return item.getItemMeta().getPersistentDataContainer().has(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
     }
 
-    private void handleAddonItem(Player player, ItemStack item) {
-        String type = item.getItemMeta().getPersistentDataContainer().get(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
-        if (type == null) return;
-        switch (type) {
-            case "crafting" -> AddonGUI.openCrafting(player);
-            case "furnace" -> AddonGUI.openFurnace(player);
-            case "blast_furnace" -> AddonGUI.openBlastFurnace(player);
-            case "smoker" -> AddonGUI.openSmoker(player);
-            case "fletching_table" -> AddonGUI.openFletchingTable(player);
-            case "grindstone" -> AddonGUI.openGrindstone(player);
-            case "stonecutter" -> AddonGUI.openStonecutter(player);
-            case "smithing_table" -> AddonGUI.openSmithingTable(player);
-            case "jukebox" -> AddonGUI.openJukebox(player, null);
-            case "quiver" -> AddonGUI.openQuiver(player, null);
-            case "enchant" -> AddonGUI.openEnchant(player, null);
-            case "glider" -> {
-                if (player.getInventory().contains(Material.ELYTRA) || player.getInventory().getChestplate() != null && player.getInventory().getChestplate().getType() == Material.ELYTRA) {
-                    player.sendMessage("§aGlider addon activated! Wear your elytra and equip a chestplate with this backpack to glide.");
-                } else {
-                    player.sendMessage("§cYou need an elytra to use the glider addon");
-                }
-            }
-        }
-    }
-
     private boolean hasAttachedBackpacks(ItemStack chest) {
         return !getAttachedBackpacks(chest).isEmpty();
     }
@@ -287,11 +209,7 @@ public class BackpackListener implements Listener {
             UUID id = UUID.fromString(split[1]);
             BackpackData data = manager.getBackpack(id);
             if (data == null) continue;
-            ItemStack backpack = BackpackData.createItem(data.tier());
-            if (backpack.getItemMeta() != null) {
-                backpack.getItemMeta().getPersistentDataContainer().set(BackpacksPlugin.key("backpack_id"), PersistentDataType.STRING, id.toString());
-            }
-            list.add(backpack);
+            list.add(BackpackData.createItem(data.tier()));
         }
         return list;
     }
@@ -310,50 +228,9 @@ public class BackpackListener implements Listener {
                 if (id != null) {
                     BackpackData data = manager.getBackpack(id);
                     if (data != null) {
-                        BackpackGUI gui = new BackpackGUI(player, data);
-                        openGuis.put(player.getUniqueId(), gui);
-                        gui.open();
+                        openBackpack(player, BackpackData.createItem(data.tier()));
                     }
                 }
-            }
-        } else if (title.equals("Backpack Crafting")) {
-            if (event.getSlot() == 0 && event.getCurrentItem() != null) {
-                event.setCancelled(true);
-                event.getWhoClicked().getInventory().addItem(event.getCurrentItem());
-                event.getInventory().setItem(0, null);
-                event.getInventory().setItem(1, null);
-                event.getInventory().setItem(2, null);
-                event.getInventory().setItem(3, null);
-                event.getInventory().setItem(4, null);
-                event.getInventory().setItem(5, null);
-                event.getInventory().setItem(6, null);
-                event.getInventory().setItem(7, null);
-                event.getInventory().setItem(8, null);
-            }
-        } else if (title.equals("Backpack Jukebox")) {
-            Player who = (Player) event.getWhoClicked();
-            if (event.getSlot() == 4) {
-                event.setCancelled(true);
-                if (event.getCurrentItem() != null && event.getCurrentItem().getType().toString().endsWith("_DISC")) {
-                    String disc = event.getCurrentItem().getType().toString();
-                    who.stopAllSounds();
-                    who.playSound(who.getLocation(), org.bukkit.Sound.valueOf(disc), 1.0f, 1.0f);
-                    who.sendMessage("§aNow playing: §e" + disc.replace("_", " ").toLowerCase());
-                }
-            }
-        } else if (title.equals("Backpack Enchant")) {
-            Player who = (Player) event.getWhoClicked();
-            int bookshelves = 0;
-            for (ItemStack item : event.getInventory().getContents()) {
-                if (item != null && item.getType() == Material.BOOKSHELF) {
-                    bookshelves += item.getAmount();
-                }
-            }
-            if (event.getSlot() == 0 && event.getCurrentItem() != null) {
-                event.setCancelled(true);
-                who.sendMessage("§aEnchanting with " + Math.min(bookshelves, 15) + " bookshelf power!");
-                who.getInventory().addItem(event.getCurrentItem());
-                event.getInventory().setItem(0, null);
             }
         }
     }
