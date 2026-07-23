@@ -136,6 +136,7 @@ public class BackpackGUI {
         if (meta != null) {
             meta.setDisplayName("§b" + name);
             meta.getPersistentDataContainer().set(com.backpacks.plugin.BackpacksPlugin.key("addon_type"), PersistentDataType.STRING, name.toLowerCase());
+            meta.getPersistentDataContainer().set(com.backpacks.plugin.BackpacksPlugin.key("gui_action"), PersistentDataType.STRING, "addon");
             stack.setItemMeta(meta);
         }
         return stack;

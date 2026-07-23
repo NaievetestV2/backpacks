@@ -12,6 +12,13 @@ public class AddonItemFactory {
     public static ItemStack create(String type) {
         Material mat = switch (type) {
             case "crafting" -> Material.CRAFTING_TABLE;
+            case "furnace" -> Material.FURNACE;
+            case "blast_furnace" -> Material.BLAST_FURNACE;
+            case "smoker" -> Material.SMOKER;
+            case "fletching_table" -> Material.FLETCHING_TABLE;
+            case "grindstone" -> Material.GRINDSTONE;
+            case "stonecutter" -> Material.STONECUTTER;
+            case "smithing_table" -> Material.SMITHING_TABLE;
             case "jukebox" -> Material.JUKEBOX;
             case "quiver" -> Material.BOW;
             case "enchant" -> Material.ENCHANTING_TABLE;

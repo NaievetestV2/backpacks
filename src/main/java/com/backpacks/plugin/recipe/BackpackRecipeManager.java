@@ -23,6 +23,13 @@ public class BackpackRecipeManager {
         registerBackpack(BackpackTier.DIAMOND, Material.LIGHT_BLUE_DYE);
         registerBackpack(BackpackTier.NETHERITE, Material.BLACK_DYE);
         registerAddon("crafting", Material.CRAFTING_TABLE);
+        registerAddon("furnace", Material.FURNACE);
+        registerAddon("blast_furnace", Material.BLAST_FURNACE);
+        registerAddon("smoker", Material.SMOKER);
+        registerAddon("fletching_table", Material.FLETCHING_TABLE);
+        registerAddon("grindstone", Material.GRINDSTONE);
+        registerAddon("stonecutter", Material.STONECUTTER);
+        registerAddon("smithing_table", Material.SMITHING_TABLE);
         registerAddon("jukebox", Material.JUKEBOX);
         registerAddon("quiver", Material.BOW);
         registerAddon("enchant", Material.ENCHANTING_TABLE);

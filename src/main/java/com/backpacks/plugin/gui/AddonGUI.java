@@ -11,12 +11,45 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.*;
-
 public class AddonGUI {
 
     public static void openCrafting(Player player) {
         Inventory inv = Bukkit.createInventory(player, InventoryType.WORKBENCH, "Backpack Crafting");
+        player.openInventory(inv);
+    }
+
+    public static void openFurnace(Player player) {
+        Inventory inv = Bukkit.createInventory(player, InventoryType.FURNACE, "Backpack Furnace");
+        player.openInventory(inv);
+    }
+
+    public static void openBlastFurnace(Player player) {
+        Inventory inv = Bukkit.createInventory(player, InventoryType.BLAST_FURNACE, "Backpack Blast Furnace");
+        player.openInventory(inv);
+    }
+
+    public static void openSmoker(Player player) {
+        Inventory inv = Bukkit.createInventory(player, InventoryType.SMOKER, "Backpack Smoker");
+        player.openInventory(inv);
+    }
+
+    public static void openFletchingTable(Player player) {
+        Inventory inv = Bukkit.createInventory(player, 9, "Backpack Fletching Table");
+        player.openInventory(inv);
+    }
+
+    public static void openGrindstone(Player player) {
+        Inventory inv = Bukkit.createInventory(player, InventoryType.GRINDSTONE, "Backpack Grindstone");
+        player.openInventory(inv);
+    }
+
+    public static void openStonecutter(Player player) {
+        Inventory inv = Bukkit.createInventory(player, InventoryType.STONECUTTER, "Backpack Stonecutter");
+        player.openInventory(inv);
+    }
+
+    public static void openSmithingTable(Player player) {
+        Inventory inv = Bukkit.createInventory(player, InventoryType.SMITHING, "Backpack Smithing Table");
         player.openInventory(inv);
     }
 

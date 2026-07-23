@@ -100,6 +100,28 @@ public class BackpackListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerInteractEntity(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        if (event.getRightClicked() == null) return;
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item == null) return;
+        if (isBackpack(item)) {
+            event.setCancelled(true);
+            if (player.getInventory().getChestplate() == null || player.getInventory().getChestplate().getType().isAir()) {
+                player.getInventory().setChestplate(item.clone());
+                if (item.getAmount() > 1) {
+                    item.setAmount(item.getAmount() - 1);
+                } else {
+                    player.getInventory().setItemInMainHand(null);
+                }
+                player.sendMessage("§aBackpack equipped on chest!");
+            } else {
+                player.sendMessage("§cYou already have something on your chest slot");
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.NORMAL)
     public void onInteractMonitor(PlayerInteractEvent event) {
         if (event.getAction().toString().contains("RIGHT_CLICK")) {
@@ -239,6 +261,13 @@ public class BackpackListener implements Listener {
         if (type == null) return;
         switch (type) {
             case "crafting" -> AddonGUI.openCrafting(player);
+            case "furnace" -> AddonGUI.openFurnace(player);
+            case "blast_furnace" -> AddonGUI.openBlastFurnace(player);
+            case "smoker" -> AddonGUI.openSmoker(player);
+            case "fletching_table" -> AddonGUI.openFletchingTable(player);
+            case "grindstone" -> AddonGUI.openGrindstone(player);
+            case "stonecutter" -> AddonGUI.openStonecutter(player);
+            case "smithing_table" -> AddonGUI.openSmithingTable(player);
             case "jukebox" -> AddonGUI.openJukebox(player, null);
             case "quiver" -> AddonGUI.openQuiver(player, null);
             case "enchant" -> AddonGUI.openEnchant(player, null);
@@ -270,7 +299,12 @@ public class BackpackListener implements Listener {
             UUID id = UUID.fromString(split[1]);
             BackpackData data = manager.getBackpack(id);
             if (data == null) continue;
-            list.add(BackpackData.createItem(data.tier()));
+            ItemStack backpack = BackpackData.createItem(data.tier());
+            UUID newId = BackpackData.readId(backpack);
+            if (newId != null && backpack.getItemMeta() != null) {
+                backpack.getItemMeta().getPersistentDataContainer().set(BackpacksPlugin.key("backpack_id"), PersistentDataType.STRING, id.toString());
+            }
+            list.add(backpack);
         }
         return list;
     }
@@ -356,15 +390,29 @@ public class BackpackListener implements Listener {
                 }
             }
             player.closeInventory();
-        }
-
-        String addon = container.get(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
-        if (addon != null) {
-            switch (addon) {
-                case "crafting" -> AddonGUI.openCrafting(player);
-                case "jukebox" -> AddonGUI.openJukebox(player, null);
-                case "quiver" -> AddonGUI.openQuiver(player, null);
-                case "enchant" -> AddonGUI.openEnchant(player, null);
+        } else if (action.equals("addon")) {
+            String addon = container.get(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
+            if (addon != null) {
+                switch (addon) {
+                    case "crafting" -> AddonGUI.openCrafting(player);
+                    case "furnace" -> AddonGUI.openFurnace(player);
+                    case "blast_furnace" -> AddonGUI.openBlastFurnace(player);
+                    case "smoker" -> AddonGUI.openSmoker(player);
+                    case "fletching_table" -> AddonGUI.openFletchingTable(player);
+                    case "grindstone" -> AddonGUI.openGrindstone(player);
+                    case "stonecutter" -> AddonGUI.openStonecutter(player);
+                    case "smithing_table" -> AddonGUI.openSmithingTable(player);
+                    case "jukebox" -> AddonGUI.openJukebox(player, null);
+                    case "quiver" -> AddonGUI.openQuiver(player, null);
+                    case "enchant" -> AddonGUI.openEnchant(player, null);
+                    case "glider" -> {
+                        if (player.getInventory().contains(Material.ELYTRA) || player.getInventory().getChestplate() != null && player.getInventory().getChestplate().getType() == Material.ELYTRA) {
+                            player.sendMessage("§aGlider addon activated! Wear your elytra and equip a chestplate with this backpack to glide.");
+                        } else {
+                            player.sendMessage("§cYou need an elytra to use the glider addon");
+                        }
+                    }
+                }
             }
         }
     }
