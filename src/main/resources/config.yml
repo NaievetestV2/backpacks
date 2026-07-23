@@ -5,7 +5,7 @@ backpacks:
   enable-jukebox-addon: true
   enable-quiver-addon: true
   enable-enchant-addon: true
-  netherite-upgrade-requires-template: true
+  enable-glider-addon: true
   gui:
     play-sound-on-open: true
     play-sound-on-close: true

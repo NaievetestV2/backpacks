@@ -15,6 +15,7 @@ public class AddonItemFactory {
             case "jukebox" -> Material.JUKEBOX;
             case "quiver" -> Material.BOW;
             case "enchant" -> Material.ENCHANTING_TABLE;
+            case "glider" -> Material.ELYTRA;
             default -> Material.PAPER;
         };
         ItemStack stack = new ItemStack(mat);

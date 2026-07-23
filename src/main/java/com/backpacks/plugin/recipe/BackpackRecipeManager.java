@@ -26,6 +26,7 @@ public class BackpackRecipeManager {
         registerAddon("jukebox", Material.JUKEBOX);
         registerAddon("quiver", Material.BOW);
         registerAddon("enchant", Material.ENCHANTING_TABLE);
+        registerAddon("glider", Material.ELYTRA);
     }
 
     private void registerBackpack(BackpackTier tier, Material dye) {

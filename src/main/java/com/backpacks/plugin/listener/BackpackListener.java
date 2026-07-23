@@ -72,12 +72,27 @@ public class BackpackListener implements Listener {
             event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
             player.sendMessage("§aOpening backpack...");
             openBackpack(player, item);
+        } else if (isAddonItem(item)) {
+            event.setCancelled(true);
+            event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
+            event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+            handleAddonItem(player, item);
         }
     }
 
     private void handleLeftClick(Player player, ItemStack item, PlayerInteractEvent event) {
         PlayerInventory inv = player.getInventory();
         ItemStack chest = inv.getChestplate();
+
+        if (event.getAction().toString().contains("BLOCK") && chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
+            if (isBackpack(item)) {
+                event.setCancelled(true);
+                event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+                openChestplateSelection(player, chest);
+                return;
+            }
+        }
+
         if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE) {
             event.setCancelled(true);
             event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
@@ -99,34 +114,42 @@ public class BackpackListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onSneak(PlayerToggleSneakEvent event) {
-        Player player = event.getPlayer();
-        if (!event.isSneaking()) return;
-        if (player.isInsideVehicle()) return;
-
-        PlayerInventory inv = player.getInventory();
-        ItemStack mainHand = inv.getItemInMainHand();
-        ItemStack offHand = inv.getItemInOffHand();
-        boolean holdingBackpack = isBackpack(mainHand) || isBackpack(offHand);
-
-        if (!holdingBackpack) return;
-
-        ItemStack chest = inv.getChestplate();
-        if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
-            openChestplateSelection(player, chest);
-        }
+    public void onJump(org.bukkit.event.player.PlayerToggleFlightEvent event) {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onToggleGlide(EntityToggleGlideEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
-        ItemStack chest = player.getInventory().getChestplate();
-        if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) return;
-        ItemMeta meta = chest.getItemMeta();
-        if (meta == null) return;
-        PersistentDataContainer container = meta.getPersistentDataContainer();
-        boolean glider = container.get(BackpacksPlugin.key("glider"), PersistentDataType.BYTE) != null && container.get(BackpacksPlugin.key("glider"), PersistentDataType.BYTE) == 1;
-        if (!glider) {
+        if (!(player.getInventory().getChestplate() != null && player.getInventory().getChestplate().getType() == Material.ELYTRA)) return;
+        ItemStack leatherChest = null;
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() == Material.LEATHER_CHESTPLATE) {
+                leatherChest = item;
+                break;
+            }
+        }
+        if (leatherChest == null || !hasAttachedBackpacks(leatherChest)) {
+            event.setCancelled(true);
+            return;
+        }
+        String raw = leatherChest.getItemMeta().getPersistentDataContainer().get(BackpacksPlugin.key("attached_backpacks"), PersistentDataType.STRING);
+        if (raw == null || raw.isEmpty()) {
+            event.setCancelled(true);
+            return;
+        }
+        boolean hasGlider = false;
+        for (String part : raw.split(",")) {
+            if (part.isBlank()) continue;
+            String[] split = part.split(":");
+            if (split.length != 2) continue;
+            UUID id = UUID.fromString(split[1]);
+            BackpackData data = manager.getBackpack(id);
+            if (data != null && data.hasAddon("glider")) {
+                hasGlider = true;
+                break;
+            }
+        }
+        if (!hasGlider) {
             event.setCancelled(true);
         }
     }
@@ -209,6 +232,24 @@ public class BackpackListener implements Listener {
     private boolean isAddonItem(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return false;
         return item.getItemMeta().getPersistentDataContainer().has(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
+    }
+
+    private void handleAddonItem(Player player, ItemStack item) {
+        String type = item.getItemMeta().getPersistentDataContainer().get(BackpacksPlugin.key("addon_type"), PersistentDataType.STRING);
+        if (type == null) return;
+        switch (type) {
+            case "crafting" -> AddonGUI.openCrafting(player);
+            case "jukebox" -> AddonGUI.openJukebox(player, null);
+            case "quiver" -> AddonGUI.openQuiver(player, null);
+            case "enchant" -> AddonGUI.openEnchant(player, null);
+            case "glider" -> {
+                if (player.getInventory().contains(Material.ELYTRA) || player.getInventory().getChestplate() != null && player.getInventory().getChestplate().getType() == Material.ELYTRA) {
+                    player.sendMessage("§aGlider addon activated! Wear your elytra and equip a chestplate with this backpack to glide.");
+                } else {
+                    player.sendMessage("§cYou need an elytra to use the glider addon");
+                }
+            }
+        }
     }
 
     private boolean hasAttachedBackpacks(ItemStack chest) {
