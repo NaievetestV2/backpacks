@@ -9,7 +9,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+
 public final class BackpacksPlugin extends JavaPlugin {
+
+    private static BackpacksPlugin instance;
+    public static BackpacksPlugin getInstance() {
+        return instance;
+    }
 
     public static NamespacedKey key(String path) {
         return new NamespacedKey(getPlugin(BackpacksPlugin.class), path);
@@ -17,8 +24,11 @@ public final class BackpacksPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         saveDefaultConfig();
-        BackpackManager manager = new BackpackManager();
+        File dataFolder = new File(getDataFolder(), "data");
+        dataFolder.mkdirs();
+        BackpackManager manager = new BackpackManager(dataFolder);
         BackpackRecipeManager recipeManager = new BackpackRecipeManager(this);
         getServer().getPluginManager().registerEvents(new BackpackListener(manager), this);
         BackpackCommand command = new BackpackCommand(manager);
@@ -44,7 +54,6 @@ public final class BackpacksPlugin extends JavaPlugin {
         player.discoverRecipe(key("backpack_iron"));
         player.discoverRecipe(key("backpack_gold"));
         player.discoverRecipe(key("backpack_diamond"));
-        player.discoverRecipe(key("backpack_netherite"));
         player.discoverRecipe(key("addon_crafting"));
         player.discoverRecipe(key("addon_jukebox"));
         player.discoverRecipe(key("addon_quiver"));

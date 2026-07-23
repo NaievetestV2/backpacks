@@ -41,7 +41,7 @@ public class BackpackGUI {
             int index = start + i;
             if (index < items.size()) {
                 inv.setItem(i, items.get(index));
-            } else {
+            } else if (i < 45) {
                 inv.setItem(i, new ItemStack(Material.AIR));
             }
         }
@@ -94,7 +94,7 @@ public class BackpackGUI {
         List<ItemStack> items = data.items();
         int start = page * 45;
         int totalSlots = openInventory.getSize();
-        for (int i = 0; i < totalSlots; i++) {
+        for (int i = 0; i < Math.min(totalSlots, 45); i++) {
             int index = start + i;
             if (index < items.size()) {
                 items.set(index, openInventory.getItem(i));
@@ -112,17 +112,22 @@ public class BackpackGUI {
     }
 
     public void nextPage() {
-        if (data.tier() == BackpackTier.NETHERITE) {
-            saveContents();
-            page = 1;
-            open();
+        if (data.tier() == BackpackTier.NETHERITE && page == 0) {
+            int totalItems = data.items().size();
+            if (totalItems > 45) {
+                saveContents();
+                page = 1;
+                open();
+            }
         }
     }
 
     public void prevPage() {
-        saveContents();
-        page = 0;
-        open();
+        if (data.tier() == BackpackTier.NETHERITE && page == 1) {
+            saveContents();
+            page = 0;
+            open();
+        }
     }
 
     private ItemStack addonItem(Material mat, String name) {

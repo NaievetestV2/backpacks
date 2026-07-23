@@ -43,7 +43,7 @@ public class ChestplateCombiner {
         return true;
     }
 
-    public static boolean toggleGlider(Player player) {
+    public static boolean detach(Player player, UUID backpackId) {
         ItemStack chest = player.getInventory().getChestplate();
         if (chest == null || chest.getType() != Material.LEATHER_CHESTPLATE) {
             player.sendMessage("§cYou must be wearing a leather chestplate");
@@ -52,10 +52,29 @@ public class ChestplateCombiner {
         ItemMeta meta = chest.getItemMeta();
         if (meta == null) return false;
         PersistentDataContainer container = meta.getPersistentDataContainer();
-        boolean current = container.get(BackpacksPlugin.key("glider"), PersistentDataType.BYTE) != null && container.get(BackpacksPlugin.key("glider"), PersistentDataType.BYTE) == 1;
-        container.set(BackpacksPlugin.key("glider"), PersistentDataType.BYTE, (byte) (current ? 0 : 1));
+        String raw = container.get(BackpacksPlugin.key("attached_backpacks"), PersistentDataType.STRING);
+        if (raw == null || raw.isEmpty()) return false;
+        List<String> parts = new ArrayList<>(List.of(raw.split(",")));
+        String found = null;
+        for (int i = 0; i < parts.size(); i++) {
+            if (parts.get(i).contains(backpackId.toString())) {
+                found = parts.remove(i);
+                break;
+            }
+        }
+        if (found == null) {
+            player.sendMessage("§cBackpack not found on chestplate");
+            return false;
+        }
+        container.set(BackpacksPlugin.key("attached_backpacks"), PersistentDataType.STRING, String.join(",", parts));
         chest.setItemMeta(meta);
-        player.sendMessage(current ? "§cGlider disabled" : "§aGlider enabled");
+        for (BackpackData data : BackpackManager.getAllBackpacks()) {
+            if (data.id().equals(backpackId)) {
+                player.getInventory().addItem(BackpackData.createItem(data.tier()));
+                break;
+            }
+        }
+        player.sendMessage("§aBackpack detached from chestplate");
         return true;
     }
 }

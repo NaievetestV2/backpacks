@@ -103,7 +103,14 @@ public class BackpackListener implements Listener {
         Player player = event.getPlayer();
         if (!event.isSneaking()) return;
         if (player.isInsideVehicle()) return;
+
         PlayerInventory inv = player.getInventory();
+        ItemStack mainHand = inv.getItemInMainHand();
+        ItemStack offHand = inv.getItemInOffHand();
+        boolean holdingBackpack = isBackpack(mainHand) || isBackpack(offHand);
+
+        if (!holdingBackpack) return;
+
         ItemStack chest = inv.getChestplate();
         if (chest != null && chest.getType() == Material.LEATHER_CHESTPLATE && hasAttachedBackpacks(chest)) {
             openChestplateSelection(player, chest);
@@ -210,24 +217,19 @@ public class BackpackListener implements Listener {
 
     private List<ItemStack> getAttachedBackpacks(ItemStack chest) {
         List<ItemStack> list = new ArrayList<>();
-        ItemMeta meta = chest.getItemMeta();
-        if (meta == null) return list;
-        PersistentDataContainer container = meta.getPersistentDataContainer();
+        ItemMeta chestMeta = chest.getItemMeta();
+        if (chestMeta == null) return list;
+        PersistentDataContainer container = chestMeta.getPersistentDataContainer();
         String raw = container.get(BackpacksPlugin.key("attached_backpacks"), PersistentDataType.STRING);
         if (raw == null || raw.isEmpty()) return list;
         for (String part : raw.split(",")) {
             if (part.isBlank()) continue;
             String[] split = part.split(":");
             if (split.length != 2) continue;
-            Material mat = Material.matchMaterial(split[0]);
-            if (mat == null) continue;
-            ItemStack stack = new ItemStack(mat);
-            ItemMeta stackMeta = stack.getItemMeta();
-            if (stackMeta != null) {
-                stackMeta.getPersistentDataContainer().set(BackpacksPlugin.key("backpack_id"), PersistentDataType.STRING, split[1]);
-                stack.setItemMeta(stackMeta);
-            }
-            list.add(stack);
+            UUID id = UUID.fromString(split[1]);
+            BackpackData data = manager.getBackpack(id);
+            if (data == null) continue;
+            list.add(BackpackData.createItem(data.tier()));
         }
         return list;
     }
@@ -302,6 +304,16 @@ public class BackpackListener implements Listener {
             BackpackGUI gui = openGuis.get(player.getUniqueId());
             if (gui != null) gui.prevPage();
         } else if (action.equals("detach")) {
+            org.bukkit.inventory.Inventory backpackInv = event.getInventory();
+            if (backpackInv != null && backpackInv.getSize() > 0) {
+                ItemStack first = backpackInv.getItem(0);
+                if (first != null) {
+                    UUID id = BackpackData.readId(first);
+                    if (id != null) {
+                        com.backpacks.plugin.backpack.ChestplateCombiner.detach(player, id);
+                    }
+                }
+            }
             player.closeInventory();
         }
 
